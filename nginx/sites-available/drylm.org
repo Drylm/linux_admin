@@ -1,5 +1,4 @@
 server {
-
     root /var/www/blog.drylm.org/;
     index index.html index.htm;
 
@@ -7,6 +6,11 @@ server {
 
     location / {
         try_files $uri $uri/ =404;
+    }
+
+    location /dl {
+        alias /var/www/dl;
+	autoindex on;
     }
 
     ## Block download agenta
@@ -33,28 +37,16 @@ server {
        try_files $uri =404;
     }
 
-    # Redirect non-https traffic to https
-    # if ($scheme != "https") {
-    #     return 301 https://$host$request_uri;
-    # } # managed by Certbot
 
-
-    listen [::]:443 ssl ipv6only=on; # managed by Certbot
     listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/blog.drylm.org/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/blog.drylm.org/privkey.pem; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/blog.drylm.org-0001/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/blog.drylm.org-0001/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-
 }
 
 server {
-    if ($host = drylm.org) {
-        return 301 https://$host$request_uri;
-    } # managed by Certbot
-
-
-    server_name 213.251.186.24 drylm.org www.drylm.org www.blog.drylm.org;
+    server_name 213.251.186.24 drylm.org www.drylm.org;
 
     location / {
         return 301 $scheme://blog.drylm.org$request_uri;
@@ -68,6 +60,14 @@ server {
        default_type "text/plain";
        try_files $uri =404;
     }
+
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/www.drylm.org/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/www.drylm.org/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
 }
 
 server {
@@ -79,27 +79,31 @@ server {
     location / {
         try_files $uri $uri/ =404;
     }
-    
-    location /dl {
-    	root /var/www/dl;
-    }
 
-    listen 80; # managed by Certbot
+    location /dl {
+    	alias /var/www/dl/;
+	autoindex on;
+    }
 
     listen 443 ssl; # managed by Certbot
     ssl_certificate /etc/letsencrypt/live/jonathan.muller.drylm.org/fullchain.pem; # managed by Certbot
     ssl_certificate_key /etc/letsencrypt/live/jonathan.muller.drylm.org/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-
 }
 
 server {
-    listen       443 ssl;
+    if ($host = drylm.org) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+#    if ($host = drylm.org) {
+#        return 301 https://$host$request_uri;
+#    } # managed by Certbot
+
+
     server_name drylm.org;
-    ssl_certificate /etc/letsencrypt/live/drylm.org-0001/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/drylm.org-0001/privkey.pem; # managed by Certbot
-    ssl_trusted_certificate /etc/letsencrypt/live/drylm.org/chain.pem;
 
     ssl_session_cache    shared:SSL:1m;
     ssl_session_timeout  5m;
@@ -114,10 +118,6 @@ server {
         try_files $uri $uri/ =404;
     }
 
-    location /pay/ideal {
-        proxy_pass http://drylm.org:3000/pay/ideal;
-    }
-
     ## Block download agenta
     if ($http_user_agent ~* LWP::Simple|wget|libwww-perl) {
         return 403;
@@ -132,40 +132,6 @@ server {
     if ( $http_referer ~* (jewelry|viagra|nude|girl|nudit|casino|poker|porn|sex|teen|babes) ) {
         return 403;
     }
-
-}
-
-server {
-  listen 443 ssl http2;
-  listen [::]:443 ssl http2;
-    ssl_certificate /etc/letsencrypt/live/bbowc.drylm.org/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/bbowc.drylm.org/privkey.pem; # managed by Certbot
-  ssl_trusted_certificate /etc/letsencrypt/live/drylm.org/chain.pem;
-  server_name bbowc.drylm.org;
-
-  root /var/www/bbowc/;
-  index index.html index.htm;
-
-    location / {
-        try_files $uri $uri/ =404;
-    }
-
-    ## Block download agents
-    if ($http_user_agent ~* LWP::Simple|wget|libwww-perl) {
-        return 403;
-    }
-
-    ## Block some nasty robots
-    if ($http_user_agent ~ (msnbot|Purebot|Baiduspider|Lipperhey|Mail.Ru|scrapbot) ) {
-        return 403;
-    }
-
-    ## Deny referal spam
-    if ( $http_referer ~* (jewelry|viagra|nude|girl|nudit|casino|poker|porn|sex|teen|babes) ) {
-        return 403;
-    }
-
-
 }
 
 server {
@@ -179,20 +145,40 @@ server {
 
     server_name blog.drylm.org;
     return 404; # managed by Certbot
-
-
 }
 
+
 server {
-    if ($host = drylm.org) {
+    if ($host = www.drylm.org) {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
 
-    server_name 213.251.186.24 drylm.org www.drylm.org www.blog.drylm.org;
+    if ($host = drylm.org) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
 
+    server_name 213.251.186.24 drylm.org www.drylm.org www.blog.drylm.org;
     listen 80;
     return 404; # managed by Certbot
+}
 
+server {
+    if ($host = blog.drylm.org) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
 
+    server_name blog.drylm.org;
+    listen 80;
+    return 404; # managed by Certbot
+}
+
+server {
+    if ($host = jonathan.muller.drylm.org) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    server_name jonathan.muller.drylm.org;
+    listen 80;
+    return 404; # managed by Certbot
 }

@@ -7,7 +7,7 @@ server {
     root /var/www/whatsclose.io/;
     index index.html index.htm;
 
-    server_name www.whatsclose.io whatsclose.io;
+    server_name www.whatsclose.io;
 
     location / {
         try_files $uri $uri/ =404;
@@ -16,7 +16,7 @@ server {
 
     # ACME challenge
     location ^~ /.well-known {
-      allow all;
+  	allow all;
       auth_basic off;
       alias /var/lib/letsencrypt/.well-known/;
       default_type "text/plain";
@@ -28,21 +28,52 @@ server {
     } # managed by Certbot
 
 
-    # Redirect non-https traffic to https
-    # if ($scheme != "https") {
-    #     return 301 https://$host$request_uri;
-    # } # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/www.whatsclose.io/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/www.whatsclose.io/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
 
 
 
 }
 
 server {
-    listen       443 ssl;
     server_name whatsclose.io;
-#    ssl_certificate /etc/letsencrypt/live/whatsclose.io-0001/fullchain.pem; # managed by Certbot
-#    ssl_certificate_key /etc/letsencrypt/live/whatsclose.io-0001/privkey.pem; # managed by Certbot
-#    ssl_trusted_certificate /etc/letsencrypt/live/whatsclose.io/chain.pem;
+
+    location / {
+        return 301 $scheme://www.whatsclose.io$request_uri;
+    }
+
+    # ACME challenge
+    location ^~ /.well-known {
+           allow all;
+           auth_basic off;
+           alias /var/lib/letsencrypt/.well-known/;
+           default_type "text/plain";
+           try_files $uri =404;
+        }
+
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/whatsclose.io/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/whatsclose.io/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+
+
+
+}
+
+server {
+    if ($host = whatsclose.io) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    server_name whatsclose.io;
 
     ssl_session_cache    shared:SSL:1m;
     ssl_session_timeout  5m;
@@ -73,21 +104,17 @@ server {
     }
 
 
-
-    ssl_certificate /etc/letsencrypt/live/whatsclose.io-0001/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/whatsclose.io-0001/privkey.pem; # managed by Certbot
 }
 
 server {
-  listen 443 ssl http2;
-  listen [::]:443 ssl http2;
-    ssl_certificate /etc/letsencrypt/live/www.whatsclose.io/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/www.whatsclose.io/privkey.pem; # managed by Certbot
-  ssl_trusted_certificate /etc/letsencrypt/live/whatsclose.io/chain.pem;
-  server_name www.whatsclose.io;
+    if ($host = www.whatsclose.io) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
 
-  root /var/www/whatsclose.io/;
-  index index.html index.htm;
+    server_name www.whatsclose.io;
+
+    root /var/www/whatsclose.io/;
+    index index.html index.htm;
 
     location / {
         try_files $uri $uri/ =404;
@@ -107,6 +134,30 @@ server {
     if ( $http_referer ~* (jewelry|viagra|nude|girl|nudit|casino|poker|porn|sex|teen|babes) ) {
         return 403;
     }
+}
+
+#server {
+#    if ($host = whatsclose.io) {
+#        return 301 https://$host$request_uri;
+#    } # managed by Certbot
+
+
+
+#    server_name whatsclose.io;
+#    listen 80;
+#    return 404; # managed by Certbot
+#}
+
+
+server {
+    if ($host = whatsclose.io) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    server_name whatsclose.io;
+    listen 80;
+    return 404; # managed by Certbot
 
 
 }
